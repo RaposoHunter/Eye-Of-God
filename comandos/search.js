@@ -1,77 +1,75 @@
-const puppeteer = require("puppeteer");
 const https = require("https");
 const fs = require("fs");
-const download = require("base64-to-image");
+const gis = require("g-i-s");
+//const filter = require("../filter.js");
 
 module.exports = {
 	name: "search",
 	description: "/search: Envia a primeira imagem encontrada sobre o que foi para o comando",
 	usage: "/search <pesquisa>",
-	execute: (bot, chatId, args) => {
-		args[0] = args.join(" ");
-		//console.log(args);
-		if(!args[0].length) return bot.sendMessage(chatId, "Você esqueceu de dizer o que queria pesquisar...");
+	execute: async (bot, chatId, args) => {
+		let search = args.join(" ");
+	
+		//let isPorn = filter(args[0]);
+		//if(isPorn) return bot.sendMessage(chatId, "PAREM DE VER PORNOGRAFIA");
 
-		bot.sendMessage(chatId, `Procurarei pela primeira imagem sobre "${args[0]}". Aguarde... \u{231B}`)
+		if(!search.length) return bot.sendMessage(chatId, "Você esqueceu de dizer o que queria pesquisar...");
 
-		/*const download = async (base64URL, filePath, optinalFileOptions) => {
-			await base64ToImage(base64URL, filePath, optinalFileOptions);
-		};*/
+		const download = async (queue, path) => new Promise((resolve, reject) => {
+			gis(queue, (err, res) => {
+				if(err) console.log(err);
+				else {
+					let URL;
+					const file = fs.createWriteStream(path);
+					
+					for (let img of res) {
+						if (img.url[4] == "s") {
+							URL = img.url;
+							break;
+						}
+					}
+		
+					https.get(URL, res => {
+						res.pipe(file);
+		
+						file.on("finish", () => {
+							file.close(resolve(true));
+						});
+		
+						file.on("error", err => {
+							console.log(err);
+							fs.unlink(path, () => {});
+							reject(err.msg);
+						});
+					}).on("error", err => {
+						console.log(err);
+						fs.unlink(path, () => {});
+						reject(err.msg);
+					});
+				}
+			});
+		});
 
-		const sendToTelegram = async (imgPath, imgDescription) => {
-			/*await msg.channel.bulkDelete(1, true).catch(err => {
-				console.log(err);
-			});*/
+		const sendToTelegram = async (imgTitle, imgPath) => {
+			/*let args = imgTitle.split(" ");
 
-			await bot.sendMessage(chatId, imgDescription);
+			for(let i in args) {
+				args[i][0].toUpperCase();
+			}
+
+			args = args.join(" ");*/
+			let args = imgTitle;
+
+			//await bot.sendMessage(chatId, args);
 			await bot.sendPhoto(chatId, imgPath);
 			await fs.unlink(imgPath, () => {});
 		}
 
-		// 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' // Rodar com Google Chrome
-		(async () => {
-			// Cria as variáveis do navegador e da página;
-			const browser = await puppeteer.launch({headless: true});
-			const page = await browser.newPage();
+		bot.sendMessage(chatId, `Procurarei pela primeira imagem sobre "${search}". Aguarde... \u{231B}`);
 
-			// Pesquisa pelo que foi enviado ao bot e espera o termino da execução da função
-			await page.goto("https://www.google.com/search?q=" + args[0]);
+		const imgPath = `./imagens_temporarias/${search}.png`
 
-			// Recupera o botão de imagens dentre todos os outros
-			let btn_href = await page.$$eval("a.q.qs", els => {
-				let href;
-
-				els.forEach((el, i) => {
-					if(el.innerText == "Imagens") href = el.href
-				})
-
-				return href || null;
-			});
-
-			if(btn_href != null) {
-				// Navega até a página das imagens
-				await page.goto(btn_href)
-				
-				// Recupera o URL da primeira imagem e sua descrição
-				let [img_href, img_alt] = await page.evaluate((sel) => {
-					let img = document.querySelector(sel);
-					let source = img.getAttribute('src');
-					let alt = img.getAttribute('alt');
-					//let link = source.replace("/", "");
-
-					return [source, alt];
-				}, ".rg_i.Q4LuWd");
-
-				// Envia os dados para o Telegram
-				let img_path = "./imagens_temporarias/";
-				await download(img_href, img_path, {fileName: args[0], type: "png"});
-
-				img_path += args[0] + ".png";
-				await sendToTelegram(img_path, img_alt);
-			}
-
-			// Fecha o navegador
-			await browser.close();
-		})();
+		await download(search, imgPath);
+		await sendToTelegram(search, imgPath);
 	}
 }
