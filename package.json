@@ -1,0 +1,28 @@
+{
+  "name": "1",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "base64-to-image": "^1.0.2",
+    "dotenv": "^8.2.0",
+    "g-i-s": "^2.1.6",
+    "node-telegram-bot-api": "^0.50.0",
+    "puppeteer": "^5.3.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RaposoHunter/Eye-Of-God.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RaposoHunter/Eye-Of-God/issues"
+  },
+  "homepage": "https://github.com/RaposoHunter/Eye-Of-God#readme",
+  "description": ""
+}
