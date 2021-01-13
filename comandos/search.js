@@ -12,43 +12,43 @@ module.exports = {
 		if(!search.length) return bot.sendMessage(chatId, "Você esqueceu de dizer o que queria pesquisar...");
 
 		const downloadAndSendToTelegram = async (queue, queueID) => {      
-      gis(queue, async (err, res) => {
+			gis(queue, async (err, res) => {
 				if(err) { 
 					console.log(err);
 					bot.sendMessage(chatId, "Algo deu errado durante a execução do comando...");
 				} else {
 					let URL;
 					let notCompatible = true;
-          let img;
-          let i = 0;
-      
-          if(isRand) {
-            do {
-              let index = Math.floor(Math.random() * res.length);
-              img = res[index];
+          				let img;
+					let i = 0;
 
-              notCompatible = img.url.indexOf(".svg") != -1 || (img.url.indexOf(".png") == -1 && img.url.indexOf(".jpg") == -1);
-            } while(notCompatible);
-          } else {
-            do {
-              img = res[i];
+					if(isRand) {
+						do {
+							let index = Math.floor(Math.random() * res.length);
+							img = res[index];
 
-              notCompatible = img.url.indexOf(".svg") != -1 || (img.url.indexOf(".png") == -1 && img.url.indexOf(".jpg") == -1);
-              i++;
-            } while(notCompatible);
-          }
-          
-          URL = img.url;
-          
-          let newSearch = [];
-          args.forEach((str, i) => {
-            newSearch[i] = str.replace(str[0], str[0].toUpperCase()); 
-          });
+							notCompatible = img.url.indexOf(".svg") != -1 || (img.url.indexOf(".png") == -1 && img.url.indexOf(".jpg") == -1);
+						} while(notCompatible);
+					} else {
+						do {
+							img = res[i];
 
-          newSearch = newSearch.join(" ");
-		      
-          await bot.sendMessage(chatId, `${requester_username}, aqui está uma imagem sobre "${newSearch}"": ${URL}`);
-          bot.deleteMessage(chatId, queueID);
+							notCompatible = img.url.indexOf(".svg") != -1 || (img.url.indexOf(".png") == -1 && img.url.indexOf(".jpg") == -1);
+							i++;
+						} while(notCompatible);
+					}
+
+					URL = img.url;
+
+					let newSearch = [];
+					args.forEach((str, i) => {
+						newSearch[i] = str.replace(str[0], str[0].toUpperCase()); 
+					});
+
+					newSearch = newSearch.join(" ");
+
+					await bot.sendMessage(chatId, `${requester_username}, aqui está uma imagem sobre "${newSearch}"": ${URL}`);
+					bot.deleteMessage(chatId, queueID);
 				}
 			});
 		};
